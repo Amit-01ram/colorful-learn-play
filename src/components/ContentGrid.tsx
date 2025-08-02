@@ -176,9 +176,12 @@ const ContentGrid = () => {
         ))}
       </div>
 
-      <div className="text-center mt-12">
-        <Button variant="hero" size="lg">
-          View All Content
+      <div className="text-center mt-12 space-x-4">
+        <Button variant="hero" size="lg" onClick={() => window.location.href = '/articles'}>
+          View All Articles
+        </Button>
+        <Button variant="outline" size="lg" onClick={() => window.location.href = '/videos'}>
+          View All Videos
         </Button>
       </div>
     </section>

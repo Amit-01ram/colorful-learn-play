@@ -24,10 +24,10 @@ const Navigation = () => {
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#articles" className="text-foreground hover:text-primary transition-colors font-medium">
+            <a href="/articles" className="text-foreground hover:text-primary transition-colors font-medium">
               Articles
             </a>
-            <a href="#videos" className="text-foreground hover:text-primary transition-colors font-medium">
+            <a href="/videos" className="text-foreground hover:text-primary transition-colors font-medium">
               Videos
             </a>
             <a href="#tools" className="text-foreground hover:text-primary transition-colors font-medium">
@@ -51,7 +51,7 @@ const Navigation = () => {
               <span className="sr-only">Toggle theme</span>
             </Button>
             
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => window.location.href = '/auth'}>
               Sign In
             </Button>
             <Button variant="default">
@@ -81,10 +81,10 @@ const Navigation = () => {
         {isOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-background border-t border-border">
-              <a href="#articles" className="block px-3 py-2 text-foreground hover:text-primary font-medium">
+              <a href="/articles" className="block px-3 py-2 text-foreground hover:text-primary font-medium">
                 Articles
               </a>
-              <a href="#videos" className="block px-3 py-2 text-foreground hover:text-primary font-medium">
+              <a href="/videos" className="block px-3 py-2 text-foreground hover:text-primary font-medium">
                 Videos
               </a>
               <a href="#tools" className="block px-3 py-2 text-foreground hover:text-primary font-medium">
@@ -94,7 +94,7 @@ const Navigation = () => {
                 About
               </a>
               <div className="flex space-x-2 px-3 py-2">
-                <Button variant="outline" className="flex-1">
+                <Button variant="outline" className="flex-1" onClick={() => window.location.href = '/auth'}>
                   Sign In
                 </Button>
                 <Button variant="default" className="flex-1">
