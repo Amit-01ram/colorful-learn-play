@@ -115,7 +115,7 @@ export default function AdsManager() {
     setFormData({
       name: ad.name,
       code: ad.code,
-      position: ad.position,
+      position: ad.position as 'homepage_top' | 'homepage_middle' | 'homepage_bottom' | 'post_before' | 'post_inside' | 'post_after',
       is_active: ad.is_active,
     });
     setIsDialogOpen(true);
@@ -203,7 +203,7 @@ export default function AdsManager() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="position">Position</Label>
-                  <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value }))}>
+                  <Select value={formData.position} onValueChange={(value) => setFormData(prev => ({ ...prev, position: value as 'homepage_top' | 'homepage_middle' | 'homepage_bottom' | 'post_before' | 'post_inside' | 'post_after' }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

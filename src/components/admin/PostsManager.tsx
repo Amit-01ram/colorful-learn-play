@@ -98,7 +98,7 @@ export default function PostsManager() {
       .replace(/[^a-z0-9 -]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
-      .trim('-');
+      .trim();
   };
 
   const handleTitleChange = (title: string) => {
@@ -186,7 +186,7 @@ export default function PostsManager() {
       slug: post.slug,
       content: post.content,
       excerpt: post.excerpt,
-      status: post.status,
+      status: post.status as 'draft' | 'published' | 'archived',
       seo_title: post.seo_title,
       seo_description: post.seo_description,
       seo_keywords: post.seo_keywords,
@@ -299,7 +299,7 @@ export default function PostsManager() {
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
-                  <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}>
+                  <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as 'draft' | 'published' | 'archived' }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>

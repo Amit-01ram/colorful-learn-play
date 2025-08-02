@@ -127,7 +127,7 @@ export default function ToolsManager() {
       description: tool.description,
       url: tool.url,
       embed_code: tool.embed_code,
-      category: tool.category,
+      category: tool.category as 'productivity' | 'design' | 'development' | 'marketing' | 'analytics' | 'other',
       thumbnail_url: tool.thumbnail_url,
       is_featured: tool.is_featured,
       is_active: tool.is_active,
@@ -206,7 +206,7 @@ export default function ToolsManager() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
+                  <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value as 'productivity' | 'design' | 'development' | 'marketing' | 'analytics' | 'other' }))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
