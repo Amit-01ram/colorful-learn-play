@@ -348,7 +348,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_post_views: {
+        Args: { post_slug: string }
+        Returns: undefined
+      }
     }
     Enums: {
       ad_position:
