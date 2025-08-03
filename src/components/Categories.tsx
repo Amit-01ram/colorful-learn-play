@@ -1,29 +1,35 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, Video, Wrench, TrendingUp, Code, Palette, Megaphone } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Categories = () => {
+  const navigate = useNavigate();
+  
   const categories = [
     {
       icon: <FileText className="h-8 w-8" />,
       title: "Articles",
       description: "In-depth guides and tutorials",
       count: "150+ articles",
-      color: "bg-primary text-primary-foreground"
+      color: "bg-primary text-primary-foreground",
+      path: "/articles"
     },
     {
       icon: <Video className="h-8 w-8" />,
       title: "Videos",
       description: "Visual learning experiences",
       count: "80+ videos",
-      color: "bg-secondary text-secondary-foreground"
+      color: "bg-secondary text-secondary-foreground",
+      path: "/videos"
     },
     {
       icon: <Wrench className="h-8 w-8" />,
       title: "Tools",
       description: "Useful utilities and resources",
       count: "25+ tools",
-      color: "bg-accent text-accent-foreground"
+      color: "bg-accent text-accent-foreground",
+      path: "/tools"
     }
   ];
 
@@ -72,6 +78,7 @@ const Categories = () => {
             key={category.title}
             className="group cursor-pointer transition-all duration-300 hover:shadow-hover hover:-translate-y-2 animate-fade-in-up"
             style={{ animationDelay: `${index * 0.1}s` }}
+            onClick={() => navigate(category.path)}
           >
             <CardHeader className="text-center">
               <div className={`w-16 h-16 rounded-full ${category.color} flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
@@ -86,7 +93,14 @@ const Categories = () => {
             </CardHeader>
             <CardContent className="text-center">
               <p className="text-sm text-muted-foreground mb-4">{category.count}</p>
-              <Button variant="outline" className="w-full group-hover:border-primary">
+              <Button 
+                variant="outline" 
+                className="w-full group-hover:border-primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(category.path);
+                }}
+              >
                 Browse {category.title}
               </Button>
             </CardContent>

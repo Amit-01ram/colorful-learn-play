@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Articles from "./pages/Articles";
 import Videos from "./pages/Videos";
+import Tools from "./pages/Tools";
 import ArticleDetail from "./pages/ArticleDetail";
 import VideoDetail from "./pages/VideoDetail";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/articles" element={<Articles />} />
               <Route path="/videos" element={<Videos />} />
+              <Route path="/tools" element={<Tools />} />
               <Route path="/article/:slug" element={<ArticleDetail />} />
               <Route path="/video/:slug" element={<VideoDetail />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />

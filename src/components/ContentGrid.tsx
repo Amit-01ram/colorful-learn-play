@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Clock, Play, Download, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ContentItem {
   id: string;
@@ -16,6 +17,7 @@ interface ContentItem {
 }
 
 const ContentGrid = () => {
+  const navigate = useNavigate();
   // Mock data - replace with real content later
   const contentItems: ContentItem[] = [
     {
@@ -166,7 +168,20 @@ const ContentGrid = () => {
                     {item.readTime}
                   </div>
                 )}
-                <Button variant="ghost" size="sm" className="ml-auto">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="ml-auto"
+                  onClick={() => {
+                    if (item.type === 'article') {
+                      navigate('/articles');
+                    } else if (item.type === 'video') {
+                      navigate('/videos');
+                    } else if (item.type === 'tool') {
+                      navigate('/tools');
+                    }
+                  }}
+                >
                   {item.type === 'tool' ? 'Try Tool' : 'Read More'}
                   <ExternalLink className="h-4 w-4 ml-1" />
                 </Button>
@@ -177,10 +192,10 @@ const ContentGrid = () => {
       </div>
 
       <div className="text-center mt-12 space-x-4">
-        <Button variant="hero" size="lg" onClick={() => window.location.href = '/articles'}>
+        <Button variant="hero" size="lg" onClick={() => navigate('/articles')}>
           View All Articles
         </Button>
-        <Button variant="outline" size="lg" onClick={() => window.location.href = '/videos'}>
+        <Button variant="outline" size="lg" onClick={() => navigate('/videos')}>
           View All Videos
         </Button>
       </div>

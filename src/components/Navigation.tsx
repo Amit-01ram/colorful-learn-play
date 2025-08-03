@@ -1,14 +1,23 @@
 import { Button } from "@/components/ui/button";
-import { Menu, Search, Sun, Moon } from "lucide-react";
+import { Menu, Search, Sun, Moon, User, LogOut, Settings } from "lucide-react";
 import { useState } from "react";
 import { useTheme } from "next-themes";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+  const { user, isAdmin, signOut } = useAuth();
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
 
   return (
@@ -16,7 +25,7 @@ const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
             <h1 className="text-2xl font-bold bg-gradient-hero bg-clip-text text-transparent">
               ContentHub
             </h1>
@@ -24,18 +33,30 @@ const Navigation = () => {
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="/articles" className="text-foreground hover:text-primary transition-colors font-medium">
+            <button 
+              onClick={() => navigate('/articles')} 
+              className="text-foreground hover:text-primary transition-colors font-medium"
+            >
               Articles
-            </a>
-            <a href="/videos" className="text-foreground hover:text-primary transition-colors font-medium">
+            </button>
+            <button 
+              onClick={() => navigate('/videos')} 
+              className="text-foreground hover:text-primary transition-colors font-medium"
+            >
               Videos
-            </a>
-            <a href="#tools" className="text-foreground hover:text-primary transition-colors font-medium">
+            </button>
+            <button 
+              onClick={() => navigate('/tools')} 
+              className="text-foreground hover:text-primary transition-colors font-medium"
+            >
               Tools
-            </a>
-            <a href="#about" className="text-foreground hover:text-primary transition-colors font-medium">
+            </button>
+            <button 
+              onClick={() => navigate('/contact')} 
+              className="text-foreground hover:text-primary transition-colors font-medium"
+            >
               About
-            </a>
+            </button>
           </div>
           
           {/* Desktop Actions */}
@@ -51,12 +72,30 @@ const Navigation = () => {
               <span className="sr-only">Toggle theme</span>
             </Button>
             
-            <Button variant="outline" onClick={() => window.location.href = '/auth'}>
-              Sign In
-            </Button>
-            <Button variant="default">
-              Create
-            </Button>
+            {user ? (
+              <>
+                {isAdmin && (
+                  <Button variant="outline" onClick={() => navigate('/admin')}>
+                    <Settings className="h-4 w-4 mr-2" />
+                    Admin
+                  </Button>
+                )}
+                <Button variant="outline" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={() => navigate('/auth')}>
+                  <User className="h-4 w-4 mr-2" />
+                  Sign In
+                </Button>
+                <Button variant="default" onClick={() => navigate('/auth')}>
+                  Create
+                </Button>
+              </>
+            )}
           </div>
           
           {/* Mobile Menu Button */}
@@ -81,25 +120,52 @@ const Navigation = () => {
         {isOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-background border-t border-border">
-              <a href="/articles" className="block px-3 py-2 text-foreground hover:text-primary font-medium">
+              <button 
+                onClick={() => { navigate('/articles'); setIsOpen(false); }} 
+                className="block px-3 py-2 text-foreground hover:text-primary font-medium w-full text-left"
+              >
                 Articles
-              </a>
-              <a href="/videos" className="block px-3 py-2 text-foreground hover:text-primary font-medium">
+              </button>
+              <button 
+                onClick={() => { navigate('/videos'); setIsOpen(false); }} 
+                className="block px-3 py-2 text-foreground hover:text-primary font-medium w-full text-left"
+              >
                 Videos
-              </a>
-              <a href="#tools" className="block px-3 py-2 text-foreground hover:text-primary font-medium">
+              </button>
+              <button 
+                onClick={() => { navigate('/tools'); setIsOpen(false); }} 
+                className="block px-3 py-2 text-foreground hover:text-primary font-medium w-full text-left"
+              >
                 Tools
-              </a>
-              <a href="#about" className="block px-3 py-2 text-foreground hover:text-primary font-medium">
+              </button>
+              <button 
+                onClick={() => { navigate('/contact'); setIsOpen(false); }} 
+                className="block px-3 py-2 text-foreground hover:text-primary font-medium w-full text-left"
+              >
                 About
-              </a>
-              <div className="flex space-x-2 px-3 py-2">
-                <Button variant="outline" className="flex-1" onClick={() => window.location.href = '/auth'}>
-                  Sign In
-                </Button>
-                <Button variant="default" className="flex-1">
-                  Create
-                </Button>
+              </button>
+              <div className="flex space-x-2 px-3 py-2 pt-4 border-t">
+                {user ? (
+                  <>
+                    {isAdmin && (
+                      <Button variant="outline" size="sm" onClick={() => { navigate('/admin'); setIsOpen(false); }}>
+                        Admin
+                      </Button>
+                    )}
+                    <Button variant="outline" size="sm" onClick={() => { handleSignOut(); setIsOpen(false); }}>
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" className="flex-1" onClick={() => { navigate('/auth'); setIsOpen(false); }}>
+                      Sign In
+                    </Button>
+                    <Button variant="default" className="flex-1" onClick={() => { navigate('/auth'); setIsOpen(false); }}>
+                      Create
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

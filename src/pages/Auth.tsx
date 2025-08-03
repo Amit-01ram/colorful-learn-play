@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -10,9 +10,20 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!loading && user) {
+      if (isAdmin) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, isAdmin, loading, navigate]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,7 +46,7 @@ export default function Auth() {
         title: 'Success',
         description: 'Signed in successfully',
       });
-      navigate('/');
+      // Navigation will be handled by useEffect when user state updates
     }
 
     setIsLoading(false);
