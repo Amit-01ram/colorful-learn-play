@@ -19,10 +19,16 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!loading && user && isAdmin) {
-      navigate('/admin', { replace: true });
-    } else if (!loading && user && !isAdmin) {
-      navigate('/', { replace: true });
+    console.log('Auth useEffect - User:', user, 'IsAdmin:', isAdmin, 'Loading:', loading);
+    
+    if (!loading && user) {
+      if (isAdmin) {
+        console.log('Redirecting admin to dashboard');
+        navigate('/admin', { replace: true });
+      } else {
+        console.log('Redirecting regular user to homepage');
+        navigate('/', { replace: true });
+      }
     }
   }, [user, isAdmin, loading, navigate]);
 
@@ -42,16 +48,25 @@ export default function Auth() {
     setIsLoading(true);
 
     try {
-      const { error } = await signIn(signInData.email, signInData.password);
+      console.log('Attempting to sign in...');
+      const result = await signIn(signInData.email, signInData.password);
       
-      if (error) {
+      if (result.error) {
+        console.error('Sign in error:', result.error);
         toast({
           title: 'Sign In Failed',
-          description: error.message || 'Invalid email or password',
+          description: result.error.message || 'Invalid email or password',
           variant: 'destructive',
+        });
+      } else {
+        console.log('Sign in successful');
+        toast({
+          title: 'Success!',
+          description: 'Signed in successfully',
         });
       }
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: 'Error',
         description: 'An unexpected error occurred',
@@ -225,6 +240,15 @@ export default function Auth() {
         <div className="mt-6 text-center text-sm text-muted-foreground">
           <p>🔒 This is a secure admin area</p>
           <p>Only authorized administrators can access this dashboard</p>
+          <div className="mt-2">
+            <Button 
+              variant="link" 
+              onClick={() => navigate('/admin')}
+              className="text-xs underline"
+            >
+              Direct link to Admin Dashboard
+            </Button>
+          </div>
         </div>
       </div>
     </div>
