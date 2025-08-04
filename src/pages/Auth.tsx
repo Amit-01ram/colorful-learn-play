@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,11 +18,21 @@ export default function Auth() {
   // Redirect if already logged in
   useEffect(() => {
     if (!loading && user) {
-      if (isAdmin) {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+      console.log('User detected:', user);
+      console.log('Is admin:', isAdmin);
+      
+      // Add a small delay to ensure admin status is properly loaded
+      const timeoutId = setTimeout(() => {
+        if (isAdmin) {
+          console.log('Redirecting to admin dashboard...');
+          navigate('/admin', { replace: true });
+        } else {
+          console.log('Redirecting to homepage...');
+          navigate('/', { replace: true });
+        }
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [user, isAdmin, loading, navigate]);
 
@@ -33,23 +44,25 @@ export default function Auth() {
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
 
+    console.log('Attempting sign in...');
     const { error } = await signIn(email, password);
 
     if (error) {
+      console.error('Sign in error:', error);
       toast({
         title: 'Error',
         description: error.message,
         variant: 'destructive',
       });
+      setIsLoading(false);
     } else {
+      console.log('Sign in successful');
       toast({
         title: 'Success',
         description: 'Signed in successfully',
       });
-      // Navigation will be handled by useEffect when user state updates
+      // Don't set loading to false here - let useEffect handle the redirect
     }
-
-    setIsLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -79,6 +92,15 @@ export default function Auth() {
     setIsLoading(false);
   };
 
+  // Show loading while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Card className="w-full max-w-md">
@@ -98,9 +120,9 @@ export default function Auth() {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="signin-email">Email</Label>
                   <Input
-                    id="email"
+                    id="signin-email"
                     name="email"
                     type="email"
                     placeholder="Enter your email"
@@ -108,9 +130,9 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="signin-password">Password</Label>
                   <Input
-                    id="password"
+                    id="signin-password"
                     name="password"
                     type="password"
                     placeholder="Enter your password"
@@ -126,9 +148,9 @@ export default function Auth() {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
+                  <Label htmlFor="signup-fullName">Full Name</Label>
                   <Input
-                    id="fullName"
+                    id="signup-fullName"
                     name="fullName"
                     type="text"
                     placeholder="Enter your full name"
@@ -136,9 +158,9 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="signup-email">Email</Label>
                   <Input
-                    id="email"
+                    id="signup-email"
                     name="email"
                     type="email"
                     placeholder="Enter your email"
@@ -146,9 +168,9 @@ export default function Auth() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="signup-password">Password</Label>
                   <Input
-                    id="password"
+                    id="signup-password"
                     name="password"
                     type="password"
                     placeholder="Create a password"
