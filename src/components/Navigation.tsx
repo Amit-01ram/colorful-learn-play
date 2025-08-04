@@ -1,178 +1,189 @@
-import { Button } from "@/components/ui/button";
-import { Menu, Search, Sun, Moon, User, LogOut, Settings } from "lucide-react";
-import { useState } from "react";
-import { useTheme } from "next-themes";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
 
-const Navigation = () => {
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { 
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Menu, Home, FileText, Video, Wrench, Phone, HelpCircle, User, Shield, LogOut } from 'lucide-react';
+
+export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
   };
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+    setIsOpen(false);
   };
 
+  const navItems = [
+    { name: 'Home', path: '/', icon: Home },
+    { name: 'Articles', path: '/articles', icon: FileText },
+    { name: 'Videos', path: '/videos', icon: Video },
+    { name: 'Tools', path: '/tools', icon: Wrench },
+    { name: 'Contact', path: '/contact', icon: Phone },
+    { name: 'Help', path: '/help', icon: HelpCircle },
+  ];
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b border-border/40">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
-            <h1 className="text-2xl font-bold bg-gradient-hero bg-clip-text text-transparent">
-              ContentHub
-            </h1>
+          <div className="flex items-center">
+            <button
+              onClick={() => handleNavigation('/')}
+              className="text-2xl font-bold text-primary hover:text-primary/80 transition-colors"
+            >
+              WebSite
+            </button>
           </div>
-          
+
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <button 
-              onClick={() => navigate('/articles')} 
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              Articles
-            </button>
-            <button 
-              onClick={() => navigate('/videos')} 
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              Videos
-            </button>
-            <button 
-              onClick={() => navigate('/tools')} 
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              Tools
-            </button>
-            <button 
-              onClick={() => navigate('/contact')} 
-              className="text-foreground hover:text-primary transition-colors font-medium"
-            >
-              About
-            </button>
-          </div>
-          
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="icon">
-              <Search className="h-5 w-5" />
-            </Button>
-            
-            {/* Theme Toggle */}
-            <Button variant="ghost" size="icon" onClick={toggleTheme}>
-              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
-            
-            {user ? (
-              <>
-                {isAdmin && (
-                  <Button variant="outline" onClick={() => navigate('/admin')}>
-                    <Settings className="h-4 w-4 mr-2" />
-                    Admin
-                  </Button>
-                )}
-                <Button variant="outline" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="outline" onClick={() => navigate('/auth')}>
-                  <User className="h-4 w-4 mr-2" />
-                  Sign In
-                </Button>
-                <Button variant="default" onClick={() => navigate('/auth')}>
-                  Create
-                </Button>
-              </>
-            )}
-          </div>
-          
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-2">
-            <Button variant="ghost" size="icon" onClick={toggleTheme}>
-              <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-              <span className="sr-only">Toggle theme</span>
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-        
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-background border-t border-border">
-              <button 
-                onClick={() => { navigate('/articles'); setIsOpen(false); }} 
-                className="block px-3 py-2 text-foreground hover:text-primary font-medium w-full text-left"
-              >
-                Articles
-              </button>
-              <button 
-                onClick={() => { navigate('/videos'); setIsOpen(false); }} 
-                className="block px-3 py-2 text-foreground hover:text-primary font-medium w-full text-left"
-              >
-                Videos
-              </button>
-              <button 
-                onClick={() => { navigate('/tools'); setIsOpen(false); }} 
-                className="block px-3 py-2 text-foreground hover:text-primary font-medium w-full text-left"
-              >
-                Tools
-              </button>
-              <button 
-                onClick={() => { navigate('/contact'); setIsOpen(false); }} 
-                className="block px-3 py-2 text-foreground hover:text-primary font-medium w-full text-left"
-              >
-                About
-              </button>
-              <div className="flex space-x-2 px-3 py-2 pt-4 border-t">
+          <div className="hidden md:block">
+            <NavigationMenu>
+              <NavigationMenuList>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavigationMenuItem key={item.name}>
+                      <NavigationMenuLink
+                        className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
+                        onClick={() => handleNavigation(item.path)}
+                      >
+                        <Icon className="h-4 w-4 mr-2" />
+                        {item.name}
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  );
+                })}
+                
+                {/* User Menu */}
                 {user ? (
-                  <>
-                    {isAdmin && (
-                      <Button variant="outline" size="sm" onClick={() => { navigate('/admin'); setIsOpen(false); }}>
-                        Admin
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger>
+                      <User className="h-4 w-4 mr-2" />
+                      Account
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <div className="p-2 w-48">
+                        <div className="px-3 py-2 text-sm text-muted-foreground border-b">
+                          {user.email}
+                        </div>
+                        {isAdmin && (
+                          <NavigationMenuLink
+                            className="flex w-full items-center rounded-md p-3 text-sm hover:bg-accent cursor-pointer"
+                            onClick={() => handleNavigation('/admin')}
+                          >
+                            <Shield className="h-4 w-4 mr-2 text-primary" />
+                            Admin Dashboard
+                          </NavigationMenuLink>
+                        )}
+                        <NavigationMenuLink
+                          className="flex w-full items-center rounded-md p-3 text-sm hover:bg-accent cursor-pointer text-destructive"
+                          onClick={handleSignOut}
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Sign Out
+                        </NavigationMenuLink>
+                      </div>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                ) : (
+                  <NavigationMenuItem>
+                    <NavigationMenuLink
+                      className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus:bg-primary/90 focus:outline-none cursor-pointer"
+                      onClick={() => handleNavigation('/auth')}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Admin Login
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                )}
+              </NavigationMenuList>
+            </NavigationMenu>
+          </div>
+
+          {/* Mobile Navigation */}
+          <div className="md:hidden">
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <div className="flex flex-col space-y-4 mt-6">
+                  {navItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Button
+                        key={item.name}
+                        variant="ghost"
+                        className="justify-start"
+                        onClick={() => handleNavigation(item.path)}
+                      >
+                        <Icon className="h-4 w-4 mr-2" />
+                        {item.name}
+                      </Button>
+                    );
+                  })}
+                  
+                  <div className="pt-4 border-t">
+                    {user ? (
+                      <div className="space-y-2">
+                        <div className="px-3 py-2 text-sm text-muted-foreground">
+                          {user.email}
+                        </div>
+                        {isAdmin && (
+                          <Button
+                            variant="ghost"
+                            className="justify-start w-full"
+                            onClick={() => handleNavigation('/admin')}
+                          >
+                            <Shield className="h-4 w-4 mr-2 text-primary" />
+                            Admin Dashboard
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          className="justify-start w-full text-destructive"
+                          onClick={handleSignOut}
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Sign Out
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        onClick={() => handleNavigation('/auth')}
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Admin Login
                       </Button>
                     )}
-                    <Button variant="outline" size="sm" onClick={() => { handleSignOut(); setIsOpen(false); }}>
-                      Sign Out
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button variant="outline" className="flex-1" onClick={() => { navigate('/auth'); setIsOpen(false); }}>
-                      Sign In
-                    </Button>
-                    <Button variant="default" className="flex-1" onClick={() => { navigate('/auth'); setIsOpen(false); }}>
-                      Create
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
-        )}
+        </div>
       </div>
     </nav>
   );
-};
-
-export default Navigation;
+}
