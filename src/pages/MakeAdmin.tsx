@@ -75,7 +75,14 @@ export default function MakeAdmin() {
   };
 
   const makeCurrentUserAdmin = async () => {
-    if (!user?.email) return;
+    if (!user?.email) {
+      toast({
+        title: 'Error',
+        description: 'No user is currently signed in',
+        variant: 'destructive',
+      });
+      return;
+    }
     
     setLoading(true);
     try {
@@ -155,7 +162,7 @@ export default function MakeAdmin() {
               </div>
               <CardTitle className="text-sm">Quick Fix</CardTitle>
               <CardDescription>
-                Make yourself ({user.email}) an admin
+                Make yourself ({user.email || 'current user'}) an admin
               </CardDescription>
             </CardHeader>
             <CardContent>
