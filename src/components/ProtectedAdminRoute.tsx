@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { Loader2, Shield, AlertTriangle } from 'lucide-react';
+import { Loader2, Shield, AlertTriangle, User, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -12,18 +12,24 @@ interface ProtectedAdminRouteProps {
 export default function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
   const { user, isAdmin, loading } = useAuth();
 
+  console.log('ProtectedAdminRoute - User:', user?.email, 'IsAdmin:', isAdmin, 'Loading:', loading);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
           <p className="text-muted-foreground">Verifying credentials...</p>
+          <p className="text-xs text-muted-foreground">
+            User: {user?.email || 'None'} | Admin: {isAdmin ? 'Yes' : 'No'}
+          </p>
         </div>
       </div>
     );
   }
 
   if (!user) {
+    console.log('No user found, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
 
@@ -43,11 +49,35 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
               You don't have administrator privileges to access this area.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-sm text-muted-foreground mb-4">
-              This admin dashboard is restricted to authorized administrators only.
-              Please contact your system administrator if you believe this is an error.
+          <CardContent className="text-center space-y-4">
+            <div className="p-3 bg-muted rounded-lg text-sm">
+              <p><strong>Current User:</strong> {user.email}</p>
+              <p><strong>Admin Status:</strong> {isAdmin ? 'Yes' : 'No'}</p>
+            </div>
+            
+            <p className="text-sm text-muted-foreground">
+              Need admin access? Go to <code>/make-admin</code> to grant yourself admin privileges.
             </p>
+            
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => window.location.href = '/make-admin'}
+                className="flex-1"
+                variant="outline"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Make Admin
+              </Button>
+              <Button 
+                onClick={() => window.location.reload()}
+                className="flex-1"
+                variant="outline"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+            
             <Button 
               onClick={() => window.location.href = '/'}
               className="w-full"
@@ -60,5 +90,6 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
     );
   }
 
+  console.log('Admin access granted, rendering dashboard');
   return <>{children}</>;
 }

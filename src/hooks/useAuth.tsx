@@ -21,22 +21,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const checkAdminStatus = async (userId: string) => {
+  const ensureProfile = async (user: User) => {
+    console.log('Ensuring profile exists for user:', user.email);
+    
+    // First check if profile exists
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching profile:', fetchError);
+      return false;
+    }
+
+    if (existingProfile) {
+      console.log('Profile exists:', existingProfile);
+      return existingProfile.is_admin || false;
+    }
+
+    // Profile doesn't exist, create it
+    console.log('Creating profile for user:', user.email);
+    const { data: newProfile, error: insertError } = await supabase
+      .from('profiles')
+      .insert([
+        {
+          user_id: user.id,
+          email: user.email || '',
+          full_name: user.user_metadata?.full_name || '',
+          is_admin: false
+        }
+      ])
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error creating profile:', insertError);
+      return false;
+    }
+
+    console.log('Profile created:', newProfile);
+    return newProfile?.is_admin || false;
+  };
+
+  const checkAdminStatus = async (userId: string, user: User) => {
     try {
       console.log('Checking admin status for user:', userId);
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('user_id', userId)
-        .single();
       
-      if (error) {
-        console.error('Error checking admin status:', error);
-        return false;
-      }
+      // Ensure profile exists first
+      const adminStatus = await ensureProfile(user);
       
-      console.log('Profile data:', profile);
-      return profile?.is_admin || false;
+      console.log('Admin status:', adminStatus);
+      return adminStatus;
     } catch (error) {
       console.error('Unexpected error checking admin status:', error);
       return false;
@@ -48,6 +85,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const initializeAuth = async () => {
       try {
+        console.log('Initializing auth...');
+        
         // Get initial session
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
@@ -59,18 +98,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
+        console.log('Initial session:', initialSession?.user?.email || 'No session');
+
         if (initialSession && mounted) {
           setSession(initialSession);
           setUser(initialSession.user);
           
-          const adminStatus = await checkAdminStatus(initialSession.user.id);
+          const adminStatus = await checkAdminStatus(initialSession.user.id, initialSession.user);
           if (mounted) {
             setIsAdmin(adminStatus);
+            console.log('Initial admin status set:', adminStatus);
           }
         }
 
         if (mounted) {
           setLoading(false);
+          console.log('Auth initialization complete');
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
@@ -83,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+        console.log('Auth state changed:', event, session?.user?.email || 'No user');
         
         if (!mounted) return;
         
@@ -91,13 +134,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          const adminStatus = await checkAdminStatus(session.user.id);
+          const adminStatus = await checkAdminStatus(session.user.id, session.user);
           if (mounted) {
             setIsAdmin(adminStatus);
+            console.log('Updated admin status:', adminStatus);
           }
         } else {
           if (mounted) {
             setIsAdmin(false);
+            console.log('User signed out, admin status reset');
           }
         }
       }
@@ -113,14 +158,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    console.log('Attempting to sign in with:', email);
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+    
+    if (error) {
+      console.error('Sign in error:', error);
+    } else {
+      console.log('Sign in successful');
+    }
+    
     return { error };
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    console.log('Attempting to sign up with:', email);
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -133,12 +187,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         },
       },
     });
+    
+    if (error) {
+      console.error('Sign up error:', error);
+    } else {
+      console.log('Sign up successful');
+    }
+    
     return { error };
   };
 
   const signOut = async () => {
+    console.log('Signing out...');
     await supabase.auth.signOut();
   };
+
+  console.log('Auth context state:', { user: user?.email, isAdmin, loading });
 
   return (
     <AuthContext.Provider value={{
