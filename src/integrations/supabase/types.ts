@@ -352,6 +352,10 @@ export type Database = {
         Args: { post_slug: string }
         Returns: undefined
       }
+      make_user_admin: {
+        Args: { user_email: string }
+        Returns: undefined
+      }
     }
     Enums: {
       ad_position:
