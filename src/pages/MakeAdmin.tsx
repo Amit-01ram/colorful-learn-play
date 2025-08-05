@@ -34,9 +34,9 @@ export default function MakeAdmin() {
         // Profile doesn't exist, try to create it
         console.log('Profile not found, attempting to create...');
         
-        // Get the user from auth.users
-        const { data: authUser } = await supabase.auth.admin.listUsers();
-        const targetUser = authUser?.users?.find(u => u.email === email);
+        // Get the user from auth.users - removed the problematic line
+        const { data: authUsers } = await supabase.auth.admin.listUsers();
+        const targetUser = authUsers?.users?.find((u: any) => u.email === email);
         
         if (targetUser) {
           const { error: insertError } = await supabase
