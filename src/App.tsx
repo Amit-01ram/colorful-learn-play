@@ -16,7 +16,6 @@ import HelpCenter from '@/pages/HelpCenter';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 import NotFound from '@/pages/NotFound';
-import MakeAdmin from '@/pages/MakeAdmin';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
 
 function App() {
@@ -36,7 +35,6 @@ function App() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/make-admin" element={<MakeAdmin />} />
             <Route 
               path="/admin" 
               element={

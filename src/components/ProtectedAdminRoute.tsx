@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { Loader2, Shield, AlertTriangle, User, RefreshCw } from 'lucide-react';
+import { Loader2, Shield, AlertTriangle, User } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -56,27 +56,8 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
             </div>
             
             <p className="text-sm text-muted-foreground">
-              Need admin access? Go to <code>/make-admin</code> to grant yourself admin privileges.
+              Please contact your administrator to grant you admin privileges in the database.
             </p>
-            
-            <div className="flex gap-2">
-              <Button 
-                onClick={() => window.location.href = '/make-admin'}
-                className="flex-1"
-                variant="outline"
-              >
-                <User className="h-4 w-4 mr-2" />
-                Make Admin
-              </Button>
-              <Button 
-                onClick={() => window.location.reload()}
-                className="flex-1"
-                variant="outline"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </Button>
-            </div>
             
             <Button 
               onClick={() => window.location.href = '/'}
