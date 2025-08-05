@@ -23,44 +23,27 @@ export default function MakeAdmin() {
     try {
       console.log('Making user admin:', email);
       
-      // First, try to update existing profile
-      const { data: updateResult, error: updateError } = await supabase
+      // Simply try to update or insert the profile as admin
+      const { error } = await supabase
         .from('profiles')
-        .update({ is_admin: true })
-        .eq('email', email)
-        .select();
-
-      if (updateError || !updateResult || updateResult.length === 0) {
-        // Profile doesn't exist, try to create it
-        console.log('Profile not found, attempting to create...');
-        
-        // Get the user from auth.users - removed the problematic line
-        const { data: authUsers } = await supabase.auth.admin.listUsers();
-        const targetUser = authUsers?.users?.find((u: any) => u.email === email);
-        
-        if (targetUser) {
-          const { error: insertError } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                user_id: targetUser.id,
-                email: email,
-                full_name: targetUser.user_metadata?.full_name || '',
-                is_admin: true
-              }
-            ]);
-
-          if (insertError) {
-            throw insertError;
+        .upsert([
+          {
+            email: email,
+            is_admin: true,
+            full_name: '', // Default empty name
+            user_id: '00000000-0000-0000-0000-000000000000' // Placeholder, will be updated when user signs in
           }
-        } else {
-          throw new Error('User not found in auth system');
-        }
+        ], {
+          onConflict: 'email'
+        });
+
+      if (error) {
+        throw error;
       }
 
       toast({
         title: 'Success!',
-        description: `User ${email} has been made an admin. They need to sign out and sign in again to see the changes.`,
+        description: `User ${email} has been marked as admin. They need to sign out and sign in again to see the changes.`,
       });
       setEmail('');
     } catch (error: any) {

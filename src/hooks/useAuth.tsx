@@ -198,8 +198,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    console.log('Signing out...');
-    await supabase.auth.signOut();
+    try {
+      console.log('Signing out...');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Sign out error:', error);
+        throw error;
+      }
+      
+      // Clear state immediately
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+      
+      console.log('Sign out successful');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      // Still clear state even if there's an error
+      setUser(null);
+      setSession(null);
+      setIsAdmin(false);
+    }
   };
 
   console.log('Auth context state:', { user: user?.email, isAdmin, loading });
