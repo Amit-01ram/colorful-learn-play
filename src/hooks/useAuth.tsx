@@ -46,6 +46,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
+    const initializeAuth = async () => {
+      try {
+        // Get initial session
+        const { data: { session: initialSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error getting initial session:', error);
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
+        }
+
+        if (initialSession && mounted) {
+          setSession(initialSession);
+          setUser(initialSession.user);
+          
+          const adminStatus = await checkAdminStatus(initialSession.user.id);
+          if (mounted) {
+            setIsAdmin(adminStatus);
+          }
+        }
+
+        if (mounted) {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error);
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
@@ -59,35 +94,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const adminStatus = await checkAdminStatus(session.user.id);
           if (mounted) {
             setIsAdmin(adminStatus);
-            setLoading(false);
           }
         } else {
           if (mounted) {
             setIsAdmin(false);
-            setLoading(false);
           }
         }
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const adminStatus = await checkAdminStatus(session.user.id);
-        if (mounted) {
-          setIsAdmin(adminStatus);
-        }
-      }
-      
-      if (mounted) {
-        setLoading(false);
-      }
-    });
+    // Initialize auth state
+    initializeAuth();
 
     return () => {
       mounted = false;

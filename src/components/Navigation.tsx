@@ -2,14 +2,22 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
-import { Menu, X, Shield, User } from 'lucide-react';
+import { Menu, X, Shield, User, Sun, Moon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from 'next-themes';
+import { useEffect } from 'react';
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAdmin, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -21,6 +29,10 @@ export default function Navigation() {
     } else {
       navigate('/auth');
     }
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
   };
 
   const navItems = [
@@ -59,8 +71,24 @@ export default function Navigation() {
             ))}
           </div>
 
-          {/* Auth and Admin Buttons */}
+          {/* Auth, Theme Toggle, and Admin Buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Theme Toggle */}
+            {mounted && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleTheme}
+                className="flex items-center gap-2"
+              >
+                {theme === 'light' ? (
+                  <Moon className="h-4 w-4" />
+                ) : (
+                  <Sun className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+            
             {isAdmin && (
               <Button
                 variant="outline"
@@ -114,6 +142,31 @@ export default function Navigation() {
               </Link>
             ))}
             <div className="pt-4 pb-3 border-t border-border">
+              {/* Mobile Theme Toggle */}
+              {mounted && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    toggleTheme();
+                    setIsOpen(false);
+                  }}
+                  className="w-full mb-2 flex items-center gap-2"
+                >
+                  {theme === 'light' ? (
+                    <>
+                      <Moon className="h-4 w-4" />
+                      Dark Mode
+                    </>
+                  ) : (
+                    <>
+                      <Sun className="h-4 w-4" />
+                      Light Mode
+                    </>
+                  )}
+                </Button>
+              )}
+              
               {isAdmin && (
                 <Button
                   variant="outline"
