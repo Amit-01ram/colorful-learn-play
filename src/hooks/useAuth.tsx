@@ -21,59 +21,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const ensureProfile = async (user: User) => {
-    console.log('Ensuring profile exists for user:', user.email);
-    
-    // First check if profile exists
-    const { data: existingProfile, error: fetchError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      console.error('Error fetching profile:', fetchError);
-      return false;
-    }
-
-    if (existingProfile) {
-      console.log('Profile exists:', existingProfile);
-      return existingProfile.is_admin || false;
-    }
-
-    // Profile doesn't exist, create it
-    console.log('Creating profile for user:', user.email);
-    const { data: newProfile, error: insertError } = await supabase
-      .from('profiles')
-      .insert([
-        {
-          user_id: user.id,
-          email: user.email || '',
-          full_name: user.user_metadata?.full_name || '',
-          is_admin: false
-        }
-      ])
-      .select()
-      .single();
-
-    if (insertError) {
-      console.error('Error creating profile:', insertError);
-      return false;
-    }
-
-    console.log('Profile created:', newProfile);
-    return newProfile?.is_admin || false;
-  };
-
-  const checkAdminStatus = async (userId: string, user: User) => {
+  const checkAdminStatus = async (userId: string, userEmail: string) => {
     try {
-      console.log('Checking admin status for user:', userId);
+      console.log('Checking admin status for user:', userEmail);
       
-      // Ensure profile exists first
-      const adminStatus = await ensureProfile(user);
-      
-      console.log('Admin status:', adminStatus);
-      return adminStatus;
+      // First, check if profile exists
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('user_id', userId)
+        .single();
+
+      if (profileError && profileError.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        console.log('Profile not found, creating for:', userEmail);
+        
+        const { data: newProfile, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: userId,
+            email: userEmail,
+            full_name: userEmail.split('@')[0], // Use email prefix as default name
+            is_admin: false
+          })
+          .select('is_admin')
+          .single();
+
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+          return false;
+        }
+
+        console.log('Profile created successfully');
+        return newProfile?.is_admin || false;
+      }
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        return false;
+      }
+
+      console.log('Profile found, admin status:', profile?.is_admin);
+      return profile?.is_admin || false;
     } catch (error) {
       console.error('Unexpected error checking admin status:', error);
       return false;
@@ -87,24 +76,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log('Initializing auth...');
         
-        // Get initial session
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
         
         if (error) {
           console.error('Error getting initial session:', error);
-          if (mounted) {
-            setLoading(false);
-          }
+          if (mounted) setLoading(false);
           return;
         }
 
-        console.log('Initial session:', initialSession?.user?.email || 'No session');
-
-        if (initialSession && mounted) {
+        if (initialSession && initialSession.user && mounted) {
+          console.log('Initial session found for:', initialSession.user.email);
           setSession(initialSession);
           setUser(initialSession.user);
           
-          const adminStatus = await checkAdminStatus(initialSession.user.id, initialSession.user);
+          const adminStatus = await checkAdminStatus(initialSession.user.id, initialSession.user.email || '');
           if (mounted) {
             setIsAdmin(adminStatus);
             console.log('Initial admin status set:', adminStatus);
@@ -113,13 +98,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (mounted) {
           setLoading(false);
-          console.log('Auth initialization complete');
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-        if (mounted) {
-          setLoading(false);
-        }
+        if (mounted) setLoading(false);
       }
     };
 
@@ -134,10 +116,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          const adminStatus = await checkAdminStatus(session.user.id, session.user);
+          const adminStatus = await checkAdminStatus(session.user.id, session.user.email || '');
           if (mounted) {
             setIsAdmin(adminStatus);
-            console.log('Updated admin status:', adminStatus);
+            console.log('Updated admin status:', adminStatus, 'for user:', session.user.email);
           }
         } else {
           if (mounted) {
@@ -148,7 +130,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Initialize auth state
     initializeAuth();
 
     return () => {
@@ -159,6 +140,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     console.log('Attempting to sign in with:', email);
+    setLoading(true);
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -166,8 +149,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     if (error) {
       console.error('Sign in error:', error);
+      setLoading(false);
     } else {
       console.log('Sign in successful');
+      // Loading will be set to false by the auth state change handler
     }
     
     return { error };
@@ -200,12 +185,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     console.log('Attempting to sign out...');
     
-    // Clear state first
-    setUser(null);
-    setSession(null);
-    setIsAdmin(false);
-    
-    // Then attempt the actual sign out
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
@@ -217,11 +196,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Unexpected error during sign out:', error);
     }
     
-    // Force page reload to ensure complete cleanup
-    window.location.reload();
+    // Clear state regardless of success/failure
+    setUser(null);
+    setSession(null);
+    setIsAdmin(false);
+    setLoading(false);
   };
 
-  console.log('Auth context state:', { user: user?.email, isAdmin, loading });
+  console.log('Current auth state:', { 
+    userEmail: user?.email, 
+    isAdmin, 
+    loading,
+    hasSession: !!session 
+  });
 
   return (
     <AuthContext.Provider value={{
