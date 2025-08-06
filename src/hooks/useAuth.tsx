@@ -1,3 +1,4 @@
+
 import { useState, useEffect, createContext, useContext } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,16 +25,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('🔍 Starting admin check for:', userEmail, 'userId:', userId);
       
-      // First, check if profile exists
+      // Query the profiles table to check admin status
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('is_admin, email')
+        .select('is_admin, email, user_id')
         .eq('user_id', userId)
         .single();
 
       console.log('📋 Profile query result:', { profile, profileError });
 
       if (profileError) {
+        console.error('❌ Profile query error:', profileError);
+        
+        // If profile doesn't exist, create one with admin = false
         if (profileError.code === 'PGRST116') {
           console.log('⚠️ Profile not found, creating new profile for:', userEmail);
           
@@ -54,16 +58,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           console.log('✅ Profile created successfully:', newProfile);
-          return newProfile?.is_admin || false;
-        } else {
-          console.error('❌ Profile query error:', profileError);
-          return false;
+          return false; // New profiles default to non-admin
         }
+        
+        return false;
       }
 
       const adminStatus = profile?.is_admin || false;
-      console.log('🔑 Final admin status:', adminStatus, 'for user:', userEmail);
+      console.log('🔑 Profile found - admin status:', adminStatus, 'for user:', userEmail);
       return adminStatus;
+      
     } catch (error) {
       console.error('💥 Unexpected error in checkAdminStatus:', error);
       return false;
@@ -125,10 +129,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (session?.user) {
           console.log('👤 User logged in, checking admin status...');
-          const adminStatus = await checkAdminStatus(session.user.id, session.user.email || '');
-          if (mounted) {
-            setIsAdmin(adminStatus);
-            console.log('🔑 Auth change - admin status updated to:', adminStatus);
+          try {
+            const adminStatus = await checkAdminStatus(session.user.id, session.user.email || '');
+            if (mounted) {
+              setIsAdmin(adminStatus);
+              console.log('🔑 Auth change - admin status updated to:', adminStatus);
+            }
+          } catch (error) {
+            console.error('💥 Error checking admin status in auth change:', error);
+            if (mounted) {
+              setIsAdmin(false);
+            }
           }
         } else {
           if (mounted) {
