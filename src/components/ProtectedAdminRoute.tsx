@@ -1,7 +1,7 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
-import { Loader2, Shield, AlertTriangle, User } from 'lucide-react';
+import { Loader2, Shield, AlertTriangle, User, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -12,11 +12,12 @@ interface ProtectedAdminRouteProps {
 export default function ProtectedAdminRoute({ children }: ProtectedAdminRouteProps) {
   const { user, isAdmin, loading } = useAuth();
 
-  console.log('ProtectedAdminRoute check:', {
+  console.log('🛡️ ProtectedAdminRoute render:', {
     userEmail: user?.email || 'No user',
     userId: user?.id || 'No ID', 
     isAdmin, 
-    loading
+    loading,
+    timestamp: new Date().toISOString()
   });
 
   if (loading) {
@@ -25,17 +26,27 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
           <p className="text-muted-foreground">Verifying admin credentials...</p>
-          <div className="text-xs text-muted-foreground space-y-1">
-            <p>User: {user?.email || 'None'}</p>
-            <p>Admin Status: {loading ? 'Checking...' : (isAdmin ? 'Yes' : 'No')}</p>
+          <div className="text-xs text-muted-foreground space-y-1 p-4 bg-muted/30 rounded-lg">
+            <p><strong>User:</strong> {user?.email || 'None'}</p>
+            <p><strong>User ID:</strong> {user?.id || 'None'}</p>
+            <p><strong>Admin Status:</strong> {loading ? 'Checking...' : (isAdmin ? 'Yes' : 'No')}</p>
+            <p><strong>Loading:</strong> {loading ? 'True' : 'False'}</p>
           </div>
+          <Button 
+            variant="outline" 
+            onClick={() => window.location.reload()}
+            className="mt-4"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh Page
+          </Button>
         </div>
       </div>
     );
   }
 
   if (!user) {
-    console.log('No user found, redirecting to auth');
+    console.log('🚫 No user found, redirecting to auth');
     return <Navigate to="/auth" replace />;
   }
 
@@ -63,12 +74,14 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
             </div>
             
             <div className="text-sm text-muted-foreground space-y-2">
-              <p>To grant admin access:</p>
-              <ol className="text-left list-decimal list-inside space-y-1">
+              <p><strong>To grant admin access:</strong></p>
+              <ol className="text-left list-decimal list-inside space-y-1 text-xs">
                 <li>Go to your Supabase dashboard</li>
                 <li>Open the Table Editor</li>
                 <li>Find the 'profiles' table</li>
-                <li>Update your profile's 'is_admin' field to true</li>
+                <li>Locate your profile row</li>
+                <li>Set 'is_admin' field to true</li>
+                <li>Save the changes</li>
               </ol>
             </div>
             
@@ -78,14 +91,15 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
                 variant="outline"
                 className="flex-1"
               >
-                Return to Website
+                Return Home
               </Button>
               <Button 
                 onClick={() => window.location.reload()}
-                variant="outline"
+                variant="default"
                 className="flex-1"
               >
-                Refresh Status
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
               </Button>
             </div>
           </CardContent>
@@ -94,6 +108,6 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
     );
   }
 
-  console.log('Admin access granted for:', user.email);
+  console.log('✅ Admin access granted for:', user.email);
   return <>{children}</>;
 }
