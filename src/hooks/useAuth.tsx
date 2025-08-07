@@ -21,24 +21,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const checkAdminStatus = async (userId: string, userEmail: string) => {
-    try {
-      console.log('🔍 Starting admin check for:', userEmail, 'userId:', userId);
-      
-      // Query the profiles table to check admin status
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('is_admin, email, user_id')
-        .eq('user_id', userId)
-        .single();
+  const checkAdminStatus = async (userId: string, userEmail: string): Promise<boolean> => {
+    return new Promise(async (resolve) => {
+      // Set a timeout to prevent hanging
+      const timeoutId = setTimeout(() => {
+        console.log('⏰ Admin check timeout - defaulting to false');
+        resolve(false);
+      }, 10000); // 10 second timeout
 
-      console.log('📋 Profile query result:', { profile, profileError });
-
-      if (profileError) {
-        console.error('❌ Profile query error:', profileError);
+      try {
+        console.log('🔍 Starting admin check for:', userEmail, 'userId:', userId);
         
-        // If profile doesn't exist, create one with admin = false
-        if (profileError.code === 'PGRST116') {
+        // Query the profiles table to check admin status
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('is_admin, email, user_id')
+          .eq('user_id', userId)
+          .maybeSingle(); // Use maybeSingle instead of single to handle no results
+
+        console.log('📋 Profile query result:', { profile, profileError });
+
+        if (profileError) {
+          console.error('❌ Profile query error:', profileError);
+          clearTimeout(timeoutId);
+          resolve(false);
+          return;
+        }
+
+        if (!profile) {
           console.log('⚠️ Profile not found, creating new profile for:', userEmail);
           
           const { data: newProfile, error: insertError } = await supabase
@@ -50,28 +60,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               is_admin: false
             })
             .select('is_admin')
-            .single();
+            .maybeSingle();
 
           if (insertError) {
             console.error('❌ Error creating profile:', insertError);
-            return false;
+            clearTimeout(timeoutId);
+            resolve(false);
+            return;
           }
 
           console.log('✅ Profile created successfully:', newProfile);
-          return false; // New profiles default to non-admin
+          clearTimeout(timeoutId);
+          resolve(false); // New profiles default to non-admin
+          return;
         }
-        
-        return false;
-      }
 
-      const adminStatus = profile?.is_admin || false;
-      console.log('🔑 Profile found - admin status:', adminStatus, 'for user:', userEmail);
-      return adminStatus;
-      
-    } catch (error) {
-      console.error('💥 Unexpected error in checkAdminStatus:', error);
-      return false;
-    }
+        const adminStatus = profile?.is_admin || false;
+        console.log('🔑 Profile found - admin status:', adminStatus, 'for user:', userEmail);
+        clearTimeout(timeoutId);
+        resolve(adminStatus);
+        
+      } catch (error) {
+        console.error('💥 Unexpected error in checkAdminStatus:', error);
+        clearTimeout(timeoutId);
+        resolve(false);
+      }
+    });
   };
 
   useEffect(() => {
@@ -97,10 +111,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(initialSession.user);
           
           console.log('🔍 Checking admin status for initial session...');
-          const adminStatus = await checkAdminStatus(initialSession.user.id, initialSession.user.email || '');
-          if (mounted) {
-            setIsAdmin(adminStatus);
-            console.log('✅ Initial admin status set to:', adminStatus);
+          try {
+            const adminStatus = await checkAdminStatus(initialSession.user.id, initialSession.user.email || '');
+            if (mounted) {
+              setIsAdmin(adminStatus);
+              console.log('✅ Initial admin status set to:', adminStatus);
+            }
+          } catch (error) {
+            console.error('💥 Error in initial admin check:', error);
+            if (mounted) {
+              setIsAdmin(false);
+            }
           }
         }
 
@@ -129,21 +150,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (session?.user) {
           console.log('👤 User logged in, checking admin status...');
-          try {
-            const adminStatus = await checkAdminStatus(session.user.id, session.user.email || '');
-            if (mounted) {
-              setIsAdmin(adminStatus);
-              console.log('🔑 Auth change - admin status updated to:', adminStatus);
+          
+          // Use setTimeout to defer admin check and prevent blocking
+          setTimeout(async () => {
+            try {
+              const adminStatus = await checkAdminStatus(session.user.id, session.user.email || '');
+              if (mounted) {
+                setIsAdmin(adminStatus);
+                setLoading(false); // Ensure loading is set to false
+                console.log('🔑 Auth change - admin status updated to:', adminStatus);
+              }
+            } catch (error) {
+              console.error('💥 Error checking admin status in auth change:', error);
+              if (mounted) {
+                setIsAdmin(false);
+                setLoading(false); // Ensure loading is set to false even on error
+              }
             }
-          } catch (error) {
-            console.error('💥 Error checking admin status in auth change:', error);
-            if (mounted) {
-              setIsAdmin(false);
-            }
-          }
+          }, 0);
         } else {
           if (mounted) {
             setIsAdmin(false);
+            setLoading(false);
             console.log('👋 User logged out, resetting admin status');
           }
         }
