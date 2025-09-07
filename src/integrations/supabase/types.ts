@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_placements: {
+        Row: {
+          ad_id: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          position: string
+          post_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          ad_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          position: string
+          post_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ad_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          position?: string
+          post_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_placements_ad_id_fkey"
+            columns: ["ad_id"]
+            isOneToOne: false
+            referencedRelation: "ads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_placements_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ads: {
         Row: {
           code: string
@@ -143,11 +188,13 @@ export type Database = {
         Row: {
           author_id: string
           category_id: string | null
+          consent_text: string | null
           content: string
           created_at: string
           excerpt: string | null
           id: string
           published_at: string | null
+          requires_consent: boolean | null
           seo_description: string | null
           seo_keywords: string | null
           seo_title: string | null
@@ -156,16 +203,22 @@ export type Database = {
           thumbnail_url: string | null
           title: string
           updated_at: string
+          video_duration: number | null
+          video_transcript: string | null
+          video_type: string | null
+          video_url: string | null
           view_count: number | null
         }
         Insert: {
           author_id: string
           category_id?: string | null
+          consent_text?: string | null
           content: string
           created_at?: string
           excerpt?: string | null
           id?: string
           published_at?: string | null
+          requires_consent?: boolean | null
           seo_description?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
@@ -174,16 +227,22 @@ export type Database = {
           thumbnail_url?: string | null
           title: string
           updated_at?: string
+          video_duration?: number | null
+          video_transcript?: string | null
+          video_type?: string | null
+          video_url?: string | null
           view_count?: number | null
         }
         Update: {
           author_id?: string
           category_id?: string | null
+          consent_text?: string | null
           content?: string
           created_at?: string
           excerpt?: string | null
           id?: string
           published_at?: string | null
+          requires_consent?: boolean | null
           seo_description?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
@@ -192,6 +251,10 @@ export type Database = {
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
+          video_duration?: number | null
+          video_transcript?: string | null
+          video_type?: string | null
+          video_url?: string | null
           view_count?: number | null
         }
         Relationships: [
@@ -342,6 +405,85 @@ export type Database = {
           url?: string | null
         }
         Relationships: []
+      }
+      video_analytics: {
+        Row: {
+          created_at: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          post_id: string | null
+          timestamp_seconds: number | null
+          user_session: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          post_id?: string | null
+          timestamp_seconds?: number | null
+          user_session?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          post_id?: string | null
+          timestamp_seconds?: number | null
+          user_session?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_analytics_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_consent_logs: {
+        Row: {
+          consent_given: boolean
+          consent_type: string[] | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          post_id: string | null
+          user_agent: string | null
+          user_session: string
+        }
+        Insert: {
+          consent_given: boolean
+          consent_type?: string[] | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          post_id?: string | null
+          user_agent?: string | null
+          user_session: string
+        }
+        Update: {
+          consent_given?: boolean
+          consent_type?: string[] | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          post_id?: string | null
+          user_agent?: string | null
+          user_session?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_consent_logs_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

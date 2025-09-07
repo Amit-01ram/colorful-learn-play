@@ -24,6 +24,12 @@ interface Post {
   seo_keywords: string;
   category_id: string;
   thumbnail_url: string;
+  video_url?: string;
+  video_duration?: number;
+  video_type?: string;
+  requires_consent?: boolean;
+  consent_text?: string;
+  video_transcript?: string;
   created_at: string;
   updated_at: string;
 }

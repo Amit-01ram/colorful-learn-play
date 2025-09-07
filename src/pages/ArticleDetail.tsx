@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Calendar, Clock, User, Eye } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, User, Eye, BookOpen } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import AdPlacement from "@/components/AdPlacement";
+import SEOHead from "@/components/SEOHead";
 
 interface Article {
   id: string;
@@ -142,10 +144,24 @@ const ArticleDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={article.seo_title || article.title}
+        description={article.seo_description || article.excerpt || article.content.substring(0, 160)}
+        keywords={article.seo_keywords}
+        image={article.thumbnail_url}
+        url={`${window.location.origin}/articles/${article.slug}`}
+        type="article"
+        publishedTime={article.published_at}
+        author={article.profiles?.full_name}
+      />
+      
       <Navigation />
       
       <article className="pt-20 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Top Ad Placement */}
+          <AdPlacement position="post_before" postId={article.id} className="mb-8" />
+          
           {/* Back Button */}
           <Button 
             variant="ghost" 
@@ -158,11 +174,17 @@ const ArticleDetail = () => {
 
           {/* Article Header */}
           <header className="mb-8">
-            {article.categories && (
-              <Badge variant="outline" className="mb-4">
-                {article.categories.name}
+            <div className="flex items-center gap-2 mb-4">
+              {article.categories && (
+                <Badge variant="outline">
+                  {article.categories.name}
+                </Badge>
+              )}
+              <Badge className="bg-green-600 text-white">
+                <BookOpen className="h-3 w-3 mr-1" />
+                Article
               </Badge>
-            )}
+            </div>
             
             <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-hero bg-clip-text text-transparent">
               {article.title}
@@ -207,13 +229,28 @@ const ArticleDetail = () => {
             </div>
           )}
 
+          {/* Middle Ad Placement */}
+          <AdPlacement position="post_inside" postId={article.id} className="mb-8" />
+
           <Separator className="mb-8" />
 
           {/* Article Content */}
-          <div 
-            className="prose prose-lg dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <div 
+                className="prose prose-lg dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: article.content }}
+              />
+            </div>
+            
+            {/* Sidebar Ad */}
+            <div className="lg:col-span-1">
+              <AdPlacement position="homepage_middle" postId={article.id} />
+            </div>
+          </div>
+          
+          {/* Bottom Ad Placement */}
+          <AdPlacement position="post_after" postId={article.id} className="mt-8" />
         </div>
       </article>
 

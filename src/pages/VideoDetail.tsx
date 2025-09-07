@@ -7,6 +7,9 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Calendar, Clock, User, Eye, Play } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import EnhancedVideoPlayer from "@/components/EnhancedVideoPlayer";
+import AdPlacement from "@/components/AdPlacement";
+import SEOHead from "@/components/SEOHead";
 
 interface Video {
   id: string;
@@ -22,6 +25,12 @@ interface Video {
   seo_keywords: string;
   author_id: string;
   category_id: string;
+  video_url?: string;
+  video_duration?: number;
+  video_type?: string;
+  requires_consent?: boolean;
+  consent_text?: string;
+  video_transcript?: string;
   categories: {
     name: string;
     slug: string;
@@ -62,6 +71,12 @@ const VideoDetail = () => {
           seo_keywords,
           author_id,
           category_id,
+          video_url,
+          video_duration,
+          video_type,
+          requires_consent,
+          consent_text,
+          video_transcript,
           categories:category_id (
             name,
             slug
@@ -142,10 +157,30 @@ const VideoDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={video.seo_title || video.title}
+        description={video.seo_description || video.excerpt || video.content.substring(0, 160)}
+        keywords={video.seo_keywords}
+        image={video.thumbnail_url}
+        url={`${window.location.origin}/videos/${video.slug}`}
+        type="video"
+        publishedTime={video.published_at}
+        author={video.profiles?.full_name}
+        videoData={{
+          duration: video.video_duration,
+          uploadDate: video.published_at,
+          thumbnailUrl: video.thumbnail_url,
+          embedUrl: video.video_url
+        }}
+      />
+      
       <Navigation />
       
       <article className="pt-20 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Top Ad Placement */}
+          <AdPlacement position="post_before" postId={video.id} className="mb-8" />
+          
           {/* Back Button */}
           <Button 
             variant="ghost" 
@@ -193,7 +228,7 @@ const VideoDetail = () => {
               </div>
               <div className="flex items-center">
                 <Clock className="h-4 w-4 mr-1" />
-                {getWatchTime(video.content)}
+                {video.video_duration ? `${Math.ceil(video.video_duration / 60)} min` : getWatchTime(video.content)}
               </div>
               <div className="flex items-center">
                 <Eye className="h-4 w-4 mr-1" />
@@ -202,40 +237,42 @@ const VideoDetail = () => {
             </div>
           </header>
 
-          {/* Video Player Area */}
+          {/* Enhanced Video Player */}
           <div className="mb-8">
-            <div className="relative bg-black rounded-lg overflow-hidden aspect-video">
-              {video.thumbnail_url ? (
-                <div className="relative h-full">
-                  <img 
-                    src={video.thumbnail_url}
-                    alt={video.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <div className="bg-white/20 backdrop-blur-sm rounded-full p-6 cursor-pointer hover:bg-white/30 transition-colors">
-                      <Play className="h-12 w-12 text-white" />
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center text-white">
-                    <Play className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-lg opacity-75">Video player will be embedded here</p>
+            <EnhancedVideoPlayer video={video} />
+          </div>
+
+          {/* Middle Ad Placement */}
+          <AdPlacement position="post_inside" postId={video.id} className="mb-8" />
+
+          <Separator className="mb-8" />
+
+          {/* Video Description and Transcript */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <div 
+                className="prose prose-lg dark:prose-invert max-w-none mb-8"
+                dangerouslySetInnerHTML={{ __html: video.content }}
+              />
+              
+              {video.video_transcript && (
+                <div className="mt-8">
+                  <h3 className="text-xl font-semibold mb-4">Video Transcript</h3>
+                  <div className="p-4 bg-muted rounded-lg text-sm leading-relaxed">
+                    {video.video_transcript}
                   </div>
                 </div>
               )}
             </div>
+            
+            {/* Sidebar Ad */}
+            <div className="lg:col-span-1">
+              <AdPlacement position="homepage_middle" postId={video.id} />
+            </div>
           </div>
-
-          <Separator className="mb-8" />
-
-          {/* Video Description */}
-          <div 
-            className="prose prose-lg dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: video.content }}
-          />
+          
+          {/* Bottom Ad Placement */}
+          <AdPlacement position="post_after" postId={video.id} className="mt-8" />
         </div>
       </article>
 
