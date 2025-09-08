@@ -10,14 +10,25 @@ import Footer from '@/components/Footer';
 
 interface Tool {
   id: string;
-  name: string;
-  description: string | null;
-  url: string | null;
-  category: string;
-  is_featured: boolean;
-  is_active: boolean;
-  thumbnail_url: string | null;
-  created_at: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  thumbnail_url: string;
+  view_count: number;
+  published_at: string;
+  seo_title: string;
+  seo_description: string;
+  seo_keywords: string;
+  author_id: string;
+  category_id: string;
+  categories: {
+    name: string;
+    slug: string;
+  };
+  profiles: {
+    full_name: string;
+  };
 }
 
 export default function Tools() {
@@ -32,29 +43,44 @@ export default function Tools() {
   const fetchTools = async () => {
     try {
       const { data, error } = await supabase
-        .from('tools')
-        .select('*')
-        .eq('is_active', true)
-        .order('is_featured', { ascending: false })
-        .order('created_at', { ascending: false });
+        .from('posts')
+        .select(`
+          id,
+          title,
+          slug,
+          content,
+          excerpt,
+          thumbnail_url,
+          view_count,
+          published_at,
+          seo_title,
+          seo_description,
+          seo_keywords,
+          author_id,
+          category_id,
+          categories:category_id (
+            name,
+            slug
+          ),
+          profiles:author_id (
+            full_name
+          )
+        `)
+        .eq('status', 'published')
+        .eq('post_type', 'tool')
+        .order('published_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching tools:', error);
-        return;
-      }
-
+      if (error) throw error;
       setTools(data || []);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching tools:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleToolClick = (url: string | null) => {
-    if (url) {
-      window.open(url, '_blank');
-    }
+  const handleToolClick = (slug: string) => {
+    navigate(`/tools/${slug}`);
   };
 
   const getCategoryIcon = (category: string) => {
@@ -121,48 +147,45 @@ export default function Tools() {
                 <Card 
                   key={tool.id} 
                   className="hover:shadow-lg transition-shadow cursor-pointer group"
-                  onClick={() => handleToolClick(tool.url)}
+                  onClick={() => handleToolClick(tool.slug)}
                 >
+                  {tool.thumbnail_url && (
+                    <div className="relative overflow-hidden rounded-t-lg">
+                      <img 
+                        src={tool.thumbnail_url} 
+                        alt={tool.title}
+                        className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
+                  )}
+                  
                   <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">{getCategoryIcon(tool.category)}</span>
-                        <div>
-                          <CardTitle className="group-hover:text-primary transition-colors">
-                            {tool.name}
-                          </CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {tool.category}
-                            </Badge>
-                            {tool.is_featured && (
-                              <Badge className="text-xs bg-primary/10 text-primary">
-                                <Star className="w-3 h-3 mr-1" />
-                                Featured
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
+                    <div className="flex items-center justify-between mb-2">
+                      {tool.categories && (
+                        <Badge variant="outline">{tool.categories.name}</Badge>
+                      )}
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Eye className="h-4 w-4 mr-1" />
+                        {tool.view_count || 0}
                       </div>
                     </div>
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      {tool.title}
+                    </CardTitle>
+                    <CardDescription className="text-base">
+                      {tool.excerpt || 'No description available.'}
+                    </CardDescription>
                   </CardHeader>
                   
                   <CardContent>
-                    <CardDescription className="mb-4 line-clamp-3">
-                      {tool.description || 'No description available.'}
-                    </CardDescription>
-                    
                     <div className="flex items-center justify-between">
                       <Button 
+                        variant="ghost" 
                         size="sm" 
-                        className="group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToolClick(tool.url);
-                        }}
+                        className="ml-auto"
                       >
                         Try Tool
-                        <ExternalLink className="w-4 h-4 ml-2" />
+                        <ExternalLink className="h-4 w-4 ml-1" />
                       </Button>
                     </div>
                   </CardContent>

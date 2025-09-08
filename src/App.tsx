@@ -17,6 +17,7 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 import NotFound from '@/pages/NotFound';
 import ProtectedAdminRoute from '@/components/ProtectedAdminRoute';
+import ToolDetail from '@/pages/ToolDetail';
 
 function App() {
   return (
@@ -28,8 +29,9 @@ function App() {
             <Route path="/articles" element={<Articles />} />
             <Route path="/articles/:slug" element={<ArticleDetail />} />
             <Route path="/videos" element={<Videos />} />
-            <Route path="/videos/:id" element={<VideoDetail />} />
+            <Route path="/videos/:slug" element={<VideoDetail />} />
             <Route path="/tools" element={<Tools />} />
+            <Route path="/tools/:slug" element={<ToolDetail />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/help" element={<HelpCenter />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />

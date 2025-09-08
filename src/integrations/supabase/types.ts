@@ -193,6 +193,7 @@ export type Database = {
           created_at: string
           excerpt: string | null
           id: string
+          post_type: Database["public"]["Enums"]["post_type"] | null
           published_at: string | null
           requires_consent: boolean | null
           seo_description: string | null
@@ -217,6 +218,7 @@ export type Database = {
           created_at?: string
           excerpt?: string | null
           id?: string
+          post_type?: Database["public"]["Enums"]["post_type"] | null
           published_at?: string | null
           requires_consent?: boolean | null
           seo_description?: string | null
@@ -241,6 +243,7 @@ export type Database = {
           created_at?: string
           excerpt?: string | null
           id?: string
+          post_type?: Database["public"]["Enums"]["post_type"] | null
           published_at?: string | null
           requires_consent?: boolean | null
           seo_description?: string | null
@@ -512,6 +515,7 @@ export type Database = {
         | "post_inside"
         | "post_after"
       post_status: "draft" | "published" | "archived"
+      post_type: "article" | "video" | "tool"
       tool_category:
         | "productivity"
         | "design"
@@ -655,6 +659,7 @@ export const Constants = {
         "post_after",
       ],
       post_status: ["draft", "published", "archived"],
+      post_type: ["article", "video", "tool"],
       tool_category: [
         "productivity",
         "design",

@@ -67,6 +67,7 @@ const Articles = () => {
           )
         `)
         .eq('status', 'published')
+        .eq('post_type', 'article')
         .order('published_at', { ascending: false });
 
       if (error) throw error;
@@ -79,7 +80,7 @@ const Articles = () => {
   };
 
   const handleArticleClick = (slug: string) => {
-    navigate(`/article/${slug}`);
+    navigate(`/articles/${slug}`);
   };
 
   const formatDate = (dateString: string) => {

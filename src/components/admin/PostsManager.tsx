@@ -19,6 +19,7 @@ interface Post {
   content: string;
   excerpt: string;
   status: 'draft' | 'published' | 'archived';
+  post_type: 'article' | 'video' | 'tool';
   seo_title: string;
   seo_description: string;
   seo_keywords: string;
@@ -51,11 +52,17 @@ export default function PostsManager() {
     content: '',
     excerpt: '',
     status: 'draft' as 'draft' | 'published' | 'archived',
+    post_type: 'article' as 'article' | 'video' | 'tool',
     seo_title: '',
     seo_description: '',
     seo_keywords: '',
     category_id: '',
     thumbnail_url: '',
+    video_url: '',
+    video_duration: 0,
+    video_type: 'youtube',
+    requires_consent: false,
+    consent_text: '',
   });
   const { toast } = useToast();
 
@@ -193,11 +200,17 @@ export default function PostsManager() {
       content: post.content,
       excerpt: post.excerpt,
       status: post.status as 'draft' | 'published' | 'archived',
+      post_type: post.post_type || 'article',
       seo_title: post.seo_title,
       seo_description: post.seo_description,
       seo_keywords: post.seo_keywords,
       category_id: post.category_id,
       thumbnail_url: post.thumbnail_url,
+      video_url: post.video_url || '',
+      video_duration: post.video_duration || 0,
+      video_type: post.video_type || 'youtube',
+      requires_consent: post.requires_consent || false,
+      consent_text: post.consent_text || '',
     });
     setIsDialogOpen(true);
   };
@@ -232,11 +245,17 @@ export default function PostsManager() {
       content: '',
       excerpt: '',
       status: 'draft',
+      post_type: 'article',
       seo_title: '',
       seo_description: '',
       seo_keywords: '',
       category_id: '',
       thumbnail_url: '',
+      video_url: '',
+      video_duration: 0,
+      video_type: 'youtube',
+      requires_consent: false,
+      consent_text: '',
     });
     setEditingPost(null);
   };
@@ -302,7 +321,20 @@ export default function PostsManager() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="post_type">Content Type</Label>
+                  <Select value={formData.post_type} onValueChange={(value) => setFormData(prev => ({ ...prev, post_type: value as 'article' | 'video' | 'tool' }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="article">Article</SelectItem>
+                      <SelectItem value="video">Video</SelectItem>
+                      <SelectItem value="tool">Tool</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
                   <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as 'draft' | 'published' | 'archived' }))}>
@@ -341,6 +373,71 @@ export default function PostsManager() {
                   />
                 </div>
               </div>
+
+              {/* Video-specific fields */}
+              {formData.post_type === 'video' && (
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/20">
+                  <h4 className="font-semibold">Video Settings</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="video_url">Video URL</Label>
+                      <Input
+                        id="video_url"
+                        value={formData.video_url}
+                        onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
+                        placeholder="https://youtube.com/watch?v=..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="video_duration">Duration (seconds)</Label>
+                      <Input
+                        id="video_duration"
+                        type="number"
+                        value={formData.video_duration}
+                        onChange={(e) => setFormData(prev => ({ ...prev, video_duration: parseInt(e.target.value) || 0 }))}
+                        placeholder="300"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="video_type">Video Type</Label>
+                      <Select value={formData.video_type} onValueChange={(value) => setFormData(prev => ({ ...prev, video_type: value }))}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="youtube">YouTube</SelectItem>
+                          <SelectItem value="vimeo">Vimeo</SelectItem>
+                          <SelectItem value="self-hosted">Self-hosted</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="requires_consent"
+                        checked={formData.requires_consent}
+                        onChange={(e) => setFormData(prev => ({ ...prev, requires_consent: e.target.checked }))}
+                        className="h-4 w-4"
+                      />
+                      <Label htmlFor="requires_consent">Requires Consent</Label>
+                    </div>
+                  </div>
+                  {formData.requires_consent && (
+                    <div className="space-y-2">
+                      <Label htmlFor="consent_text">Consent Message</Label>
+                      <Textarea
+                        id="consent_text"
+                        value={formData.consent_text}
+                        onChange={(e) => setFormData(prev => ({ ...prev, consent_text: e.target.value }))}
+                        placeholder="By watching this video, you agree to..."
+                        rows={2}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">SEO Settings</h3>
@@ -399,6 +496,7 @@ export default function PostsManager() {
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Created</TableHead>
@@ -409,6 +507,15 @@ export default function PostsManager() {
               {posts.map((post) => (
                 <TableRow key={post.id}>
                   <TableCell className="font-medium">{post.title}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded text-xs capitalize ${
+                      post.post_type === 'article' ? 'bg-blue-100 text-blue-800' :
+                      post.post_type === 'video' ? 'bg-red-100 text-red-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {post.post_type || 'article'}
+                    </span>
+                  </TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded text-xs ${
                       post.status === 'published' ? 'bg-green-100 text-green-800' :

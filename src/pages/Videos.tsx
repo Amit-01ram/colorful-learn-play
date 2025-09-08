@@ -69,7 +69,7 @@ const Videos = () => {
           )
         `)
         .eq('status', 'published')
-        .or('seo_keywords.ilike.%video%,title.ilike.%video%,content.ilike.%video%')
+        .eq('post_type', 'video')
         .order('published_at', { ascending: false });
 
       if (error) throw error;
@@ -82,7 +82,7 @@ const Videos = () => {
   };
 
   const handleVideoClick = (slug: string) => {
-    navigate(`/video/${slug}`);
+    navigate(`/videos/${slug}`);
   };
 
   const formatDate = (dateString: string) => {

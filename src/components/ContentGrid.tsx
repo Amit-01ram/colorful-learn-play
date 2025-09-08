@@ -1,8 +1,10 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Clock, Play, Download, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ContentItem {
   id: string;
@@ -11,75 +13,63 @@ interface ContentItem {
   type: 'article' | 'video' | 'tool';
   category: string;
   readTime?: string;
-  views: string;
+  views: number;
   image: string;
+  slug: string;
   featured?: boolean;
 }
 
 const ContentGrid = () => {
   const navigate = useNavigate();
-  // Mock data - replace with real content later
-  const contentItems: ContentItem[] = [
-    {
-      id: '1',
-      title: 'Building Modern Web Applications with React',
-      description: 'Learn the latest React patterns and best practices for building scalable applications.',
-      type: 'article',
-      category: 'Development',
-      readTime: '8 min read',
-      views: '2.1k',
-      image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop',
-      featured: true
-    },
-    {
-      id: '2',
-      title: 'Complete Guide to Design Systems',
-      description: 'Master the art of creating consistent and scalable design systems.',
-      type: 'video',
-      category: 'Design',
-      readTime: '15 min',
-      views: '3.5k',
-      image: 'https://images.unsplash.com/photo-1586717799252-bd134ad00e26?w=400&h=250&fit=crop'
-    },
-    {
-      id: '3',
-      title: 'Color Palette Generator',
-      description: 'Generate beautiful color palettes for your next project with AI assistance.',
-      type: 'tool',
-      category: 'Design',
-      views: '1.8k',
-      image: 'https://images.unsplash.com/photo-1541462608143-67571c6738dd?w=400&h=250&fit=crop'
-    },
-    {
-      id: '4',
-      title: 'TypeScript Best Practices',
-      description: 'Advanced TypeScript techniques for better code quality and developer experience.',
-      type: 'article',
-      category: 'Development',
-      readTime: '12 min read',
-      views: '4.2k',
-      image: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=400&h=250&fit=crop'
-    },
-    {
-      id: '5',
-      title: 'SEO Optimization Masterclass',
-      description: 'Learn how to optimize your website for search engines and improve rankings.',
-      type: 'video',
-      category: 'Marketing',
-      readTime: '22 min',
-      views: '5.1k',
-      image: 'https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=400&h=250&fit=crop'
-    },
-    {
-      id: '6',
-      title: 'Code Snippet Manager',
-      description: 'Organize and share your code snippets with syntax highlighting and tags.',
-      type: 'tool',
-      category: 'Development',
-      views: '2.7k',
-      image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=250&fit=crop'
+  const [contentItems, setContentItems] = useState<ContentItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchContent();
+  }, []);
+
+  const fetchContent = async () => {
+    try {
+      const { data: posts, error } = await supabase
+        .from('posts')
+        .select(`
+          id,
+          title,
+          excerpt,
+          post_type,
+          view_count,
+          thumbnail_url,
+          slug,
+          categories(name)
+        `)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (error) {
+        console.error('Error fetching content:', error);
+        return;
+      }
+
+      const formattedContent: ContentItem[] = posts?.map(post => ({
+        id: post.id,
+        title: post.title,
+        description: post.excerpt || 'No description available',
+        type: (post.post_type || 'article') as 'article' | 'video' | 'tool',
+        category: post.categories?.name || 'Uncategorized',
+        views: post.view_count || 0,
+        image: post.thumbnail_url || 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop',
+        slug: post.slug,
+        featured: false
+      })) || [];
+
+      setContentItems(formattedContent);
+    } catch (error) {
+      console.error('Error fetching content:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -114,8 +104,15 @@ const ContentGrid = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {contentItems.map((item, index) => (
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading content...</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {contentItems.map((item, index) => (
           <Card 
             key={item.id} 
             className={`group cursor-pointer transition-all duration-300 hover:shadow-hover hover:-translate-y-2 ${
@@ -174,11 +171,11 @@ const ContentGrid = () => {
                   className="ml-auto"
                   onClick={() => {
                     if (item.type === 'article') {
-                      navigate('/articles');
+                      navigate(`/articles/${item.slug}`);
                     } else if (item.type === 'video') {
-                      navigate('/videos');
+                      navigate(`/videos/${item.slug}`);
                     } else if (item.type === 'tool') {
-                      navigate('/tools');
+                      navigate(`/tools/${item.slug}`);
                     }
                   }}
                 >
@@ -188,17 +185,19 @@ const ContentGrid = () => {
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+            ))}
+          </div>
 
-      <div className="text-center mt-12 space-x-4">
-        <Button variant="hero" size="lg" onClick={() => navigate('/articles')}>
-          View All Articles
-        </Button>
-        <Button variant="outline" size="lg" onClick={() => navigate('/videos')}>
-          View All Videos
-        </Button>
-      </div>
+          <div className="text-center mt-12 space-x-4">
+            <Button variant="hero" size="lg" onClick={() => navigate('/articles')}>
+              View All Articles
+            </Button>
+            <Button variant="outline" size="lg" onClick={() => navigate('/videos')}>
+              View All Videos
+            </Button>
+          </div>
+        </>
+      )}
     </section>
   );
 };
