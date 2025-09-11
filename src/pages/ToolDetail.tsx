@@ -9,6 +9,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import AdPlacement from "@/components/AdPlacement";
 import SEOHead from "@/components/SEOHead";
+import CodeRunner from "@/components/CodeRunner";
 
 interface ToolItem {
   id: string;
@@ -227,10 +228,7 @@ const ToolDetail = () => {
           {/* Tool Description */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
-              <div 
-                className="prose prose-lg dark:prose-invert max-w-none mb-8"
-                dangerouslySetInnerHTML={{ __html: tool.content }}
-              />
+              <CodeRunner code={tool.content} title={tool.title} />
             </div>
             
             {/* Sidebar Ad */}
