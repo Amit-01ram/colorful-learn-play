@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, Settings } from 'lucide-react';
 import VideoConsentPopup from './VideoConsentPopup';
 import { useToast } from '@/hooks/use-toast';
 
@@ -30,6 +30,8 @@ export default function EnhancedVideoPlayer({ video, autoplay = false }: Enhance
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [isMuted, setIsMuted] = useState(false);
+  const [quality, setQuality] = useState('auto');
+  const [showQualityMenu, setShowQualityMenu] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { toast } = useToast();
 
@@ -128,13 +130,15 @@ export default function EnhancedVideoPlayer({ video, autoplay = false }: Enhance
   };
 
   const getVideoEmbedUrl = (url: string, type: string) => {
+    const qualityParam = quality !== 'auto' ? `&vq=${quality}` : '';
+    
     if (type === 'youtube') {
       const videoId = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
-      return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}`;
+      return `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}${qualityParam}`;
     }
     if (type === 'vimeo') {
       const videoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
-      return `https://player.vimeo.com/video/${videoId}`;
+      return `https://player.vimeo.com/video/${videoId}${quality !== 'auto' ? `?quality=${quality}` : ''}`;
     }
     return url; // Direct video file
   };
@@ -284,18 +288,57 @@ export default function EnhancedVideoPlayer({ video, autoplay = false }: Enhance
                 </span>
               </div>
               
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  if (videoRef.current) {
-                    videoRef.current.requestFullscreen();
-                  }
-                }}
-                className="text-white hover:bg-white/20 p-1"
-              >
-                <Maximize className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center space-x-2">
+                {/* Quality Selection */}
+                <div className="relative">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setShowQualityMenu(!showQualityMenu)}
+                    className="text-white hover:bg-white/20 p-1"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                  
+                  {showQualityMenu && (
+                    <div className="absolute bottom-8 right-0 bg-black/80 backdrop-blur-sm rounded-lg p-2 space-y-1 min-w-24">
+                      {['auto', '1080p', '720p', '480p', '360p'].map((q) => (
+                        <button
+                          key={q}
+                          onClick={() => {
+                            setQuality(q);
+                            setShowQualityMenu(false);
+                            // Reload video with new quality for direct videos
+                            if (videoRef.current && video.video_type !== 'youtube' && video.video_type !== 'vimeo') {
+                              const currentTime = videoRef.current.currentTime;
+                              videoRef.current.load();
+                              videoRef.current.currentTime = currentTime;
+                            }
+                          }}
+                          className={`block w-full text-left px-2 py-1 text-sm rounded transition-colors ${
+                            quality === q ? 'bg-primary text-primary-foreground' : 'text-white hover:bg-white/20'
+                          }`}
+                        >
+                          {q === 'auto' ? 'Auto' : q}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    if (videoRef.current) {
+                      videoRef.current.requestFullscreen();
+                    }
+                  }}
+                  className="text-white hover:bg-white/20 p-1"
+                >
+                  <Maximize className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>

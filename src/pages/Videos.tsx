@@ -141,7 +141,7 @@ const Videos = () => {
               <p className="text-muted-foreground">Check back soon for new video content!</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {videos.map((video, index) => (
                 <Card 
                   key={video.id}
@@ -153,7 +153,7 @@ const Videos = () => {
                     <img 
                       src={video.thumbnail_url || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=250&fit=crop'} 
                       alt={video.title}
-                      className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                       <div className="bg-white/20 backdrop-blur-sm rounded-full p-4">
