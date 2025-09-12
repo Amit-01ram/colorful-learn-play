@@ -19,9 +19,15 @@ import {
   Eye,
   TrendingUp,
   Calendar,
-  Search
+  Search,
+  Map
 } from 'lucide-react';
 import PostsManager from '@/components/admin/PostsManager';
+import ToolsManager from '@/components/admin/ToolsManager';
+import AdsManager from '@/components/admin/AdsManager';
+import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
+import GlobalSettings from '@/components/admin/GlobalSettings';
+import SitemapManager from '@/components/admin/SitemapManager';
 import ThemeToggle from '@/components/admin/ThemeToggle';
 
 export default function Dashboard() {
@@ -122,6 +128,14 @@ export default function Dashboard() {
             >
               <TrendingUp className="h-4 w-4 mr-2" />
               Analytics
+            </Button>
+            <Button
+              variant={activeTab === 'sitemap' ? 'default' : 'ghost'}
+              className="w-full justify-start"
+              onClick={() => setActiveTab('sitemap')}
+            >
+              <Map className="h-4 w-4 mr-2" />
+              Sitemap Manager
             </Button>
             <Button
               variant={activeTab === 'settings' ? 'default' : 'ghost'}
@@ -241,50 +255,16 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'posts' && <PostsManager />}
-
-          {activeTab === 'tools' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold">Tools Management</h2>
-              <Card>
-                <CardContent className="p-6">
-                  <p className="text-muted-foreground">Tools management interface will be implemented here.</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {activeTab === 'ads' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold">Ads Management</h2>
-              <Card>
-                <CardContent className="p-6">
-                  <p className="text-muted-foreground">Ads management interface will be implemented here.</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {activeTab === 'analytics' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold">Website Analytics</h2>
-              <Card>
-                <CardContent className="p-6">
-                  <p className="text-muted-foreground">Analytics dashboard will be implemented here.</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {activeTab === 'settings' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold">Site Settings</h2>
-              <Card>
-                <CardContent className="p-6">
-                  <p className="text-muted-foreground">Site settings interface will be implemented here.</p>
-                </CardContent>
-              </Card>
-            </div>
-          )}
+          
+          {activeTab === 'tools' && <ToolsManager />}
+          
+          {activeTab === 'ads' && <AdsManager />}
+          
+          {activeTab === 'analytics' && <AnalyticsDashboard />}
+          
+          {activeTab === 'sitemap' && <SitemapManager />}
+          
+          {activeTab === 'settings' && <GlobalSettings />}
         </main>
       </div>
     </div>
