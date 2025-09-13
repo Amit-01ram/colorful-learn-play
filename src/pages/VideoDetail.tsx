@@ -178,6 +178,9 @@ const VideoDetail = () => {
       
       <article className="pt-20 pb-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Video Banner 728x90 - Top */}
+          <AdPlacement position="video_banner_728x90" postId={video.id} className="mb-8 flex justify-center" />
+          
           {/* Top Ad Placement */}
           <AdPlacement position="post_before" postId={video.id} className="mb-8" />
           
@@ -242,8 +245,14 @@ const VideoDetail = () => {
             <EnhancedVideoPlayer video={video} />
           </div>
 
+          {/* Video Social Bar */}
+          <AdPlacement position="video_social_bar" postId={video.id} className="mb-6" />
+
           {/* Middle Ad Placement */}
           <AdPlacement position="post_inside" postId={video.id} className="mb-8" />
+          
+          {/* Video Native Banner */}
+          <AdPlacement position="video_native_banner" postId={video.id} className="mb-8" />
 
           <Separator className="mb-8" />
 
@@ -265,14 +274,22 @@ const VideoDetail = () => {
               )}
             </div>
             
-            {/* Sidebar Ad */}
-            <div className="lg:col-span-1">
+            {/* Sidebar Ads */}
+            <div className="lg:col-span-1 space-y-6">
+              <AdPlacement position="video_banner_300x250" postId={video.id} />
+              <AdPlacement position="video_smartlink" postId={video.id} />
               <AdPlacement position="homepage_middle" postId={video.id} />
             </div>
           </div>
           
           {/* Bottom Ad Placement */}
           <AdPlacement position="post_after" postId={video.id} className="mt-8" />
+          
+          {/* Video Banner 728x90 - Bottom */}
+          <AdPlacement position="video_banner_728x90" postId={video.id} className="mt-6 flex justify-center" />
+          
+          {/* Popunder Ad (Hidden trigger) */}
+          <AdPlacement position="video_popunder" postId={video.id} />
         </div>
       </article>
 

@@ -10,7 +10,8 @@ interface Ad {
 }
 
 interface AdPlacementProps {
-  position: 'homepage_top' | 'homepage_middle' | 'homepage_bottom' | 'post_before' | 'post_inside' | 'post_after';
+  position: 'homepage_top' | 'homepage_middle' | 'homepage_bottom' | 'post_before' | 'post_inside' | 'post_after' | 
+           'video_banner_300x250' | 'video_banner_728x90' | 'video_popunder' | 'video_smartlink' | 'video_social_bar' | 'video_native_banner';
   postId?: string;
   className?: string;
 }
@@ -142,6 +143,18 @@ function getAdDimensions(position: string): string {
       return 'h-32 w-full'; // Inline content style
     case 'homepage_middle':
       return 'h-64 w-full'; // Large banner style
+    case 'video_banner_300x250':
+      return 'h-[250px] w-[300px]'; // Medium Rectangle Banner
+    case 'video_banner_728x90':
+      return 'h-[90px] w-full max-w-[728px]'; // Leaderboard Banner
+    case 'video_popunder':
+      return 'h-0 w-0 overflow-hidden'; // Hidden popunder trigger
+    case 'video_smartlink':
+      return 'h-8 w-full'; // Smartlink style
+    case 'video_social_bar':
+      return 'h-12 w-full'; // Social bar style
+    case 'video_native_banner':
+      return 'h-40 w-full'; // Native ad style
     default:
       return 'h-24 w-full';
   }
