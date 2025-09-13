@@ -514,6 +514,12 @@ export type Database = {
         | "post_before"
         | "post_inside"
         | "post_after"
+        | "video_banner_300x250"
+        | "video_banner_728x90"
+        | "video_popunder"
+        | "video_smartlink"
+        | "video_social_bar"
+        | "video_native_banner"
       post_status: "draft" | "published" | "archived"
       post_type: "article" | "video" | "tool"
       tool_category:
@@ -657,6 +663,12 @@ export const Constants = {
         "post_before",
         "post_inside",
         "post_after",
+        "video_banner_300x250",
+        "video_banner_728x90",
+        "video_popunder",
+        "video_smartlink",
+        "video_social_bar",
+        "video_native_banner",
       ],
       post_status: ["draft", "published", "archived"],
       post_type: ["article", "video", "tool"],
