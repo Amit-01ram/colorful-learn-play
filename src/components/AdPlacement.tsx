@@ -34,7 +34,7 @@ export default function AdPlacement({ position, postId, className = '' }: AdPlac
       let query = supabase
         .from('ads')
         .select('*')
-        .eq('position', position)
+        .eq('position', position as any)
         .eq('is_active', true);
 
       // If postId is provided, check for specific ad placements first
@@ -52,7 +52,7 @@ export default function AdPlacement({ position, postId, className = '' }: AdPlac
             )
           `)
           .eq('post_id', postId)
-          .eq('position', position)
+          .eq('position', position as any)
           .eq('is_active', true)
           .single();
 
