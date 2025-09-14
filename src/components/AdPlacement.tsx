@@ -26,6 +26,7 @@ export default function AdPlacement({ position, postId, className = '' }: AdPlac
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🚀 AdPlacement mounted for position:', position, 'postId:', postId);
     fetchAd();
   }, [position, postId]);
 
