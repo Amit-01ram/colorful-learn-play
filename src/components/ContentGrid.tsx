@@ -124,7 +124,9 @@ const ContentGrid = () => {
               <img 
                 src={item.image} 
                 alt={item.title}
-                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                className={`w-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+                  item.type === 'video' ? 'h-32' : 'h-48'
+                }`}
               />
               <div className="absolute top-4 left-4">
                 <Badge className={getTypeColor(item.type)}>
@@ -149,11 +151,16 @@ const ContentGrid = () => {
                   {item.views}
                 </div>
               </div>
-              <CardTitle className="text-xl group-hover:text-primary transition-colors">
+              <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2 min-h-[3.5rem]">
                 {item.title}
               </CardTitle>
-              <CardDescription className="text-base">
-                {item.description}
+              <CardDescription className={`${
+                item.type === 'video' ? 'text-sm line-clamp-2' : 'text-base'
+              } overflow-hidden text-ellipsis`}>
+                {item.type === 'video' 
+                  ? item.description.substring(0, 60) + (item.description.length > 60 ? '...' : '')
+                  : item.description
+                }
               </CardDescription>
             </CardHeader>
             

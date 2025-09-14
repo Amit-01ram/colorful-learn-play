@@ -178,11 +178,11 @@ const Videos = () => {
                         {video.view_count || 0}
                       </div>
                     </div>
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-2">
+                    <CardTitle className="text-lg group-hover:text-primary transition-colors line-clamp-2 min-h-[3.5rem]">
                       {video.title}
                     </CardTitle>
-                    <CardDescription className="text-base line-clamp-3">
-                      {video.excerpt || video.content.substring(0, 150) + '...'}
+                    <CardDescription className="text-sm line-clamp-2 overflow-hidden text-ellipsis">
+                      {video.excerpt || video.content.replace(/<[^>]*>/g, '').substring(0, 80) + '...'}
                     </CardDescription>
                   </CardHeader>
                   
