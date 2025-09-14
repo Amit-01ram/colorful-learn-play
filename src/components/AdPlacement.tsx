@@ -31,6 +31,8 @@ export default function AdPlacement({ position, postId, className = '' }: AdPlac
 
   const fetchAd = async () => {
     try {
+      console.log('🔍 Fetching ad for position:', position, 'postId:', postId);
+      
       let query = supabase
         .from('ads')
         .select('*')
@@ -39,7 +41,8 @@ export default function AdPlacement({ position, postId, className = '' }: AdPlac
 
       // If postId is provided, check for specific ad placements first
       if (postId) {
-        const { data: placementData } = await supabase
+        console.log('📍 Checking for specific ad placement for post:', postId);
+        const { data: placementData, error: placementError } = await supabase
           .from('ad_placements')
           .select(`
             ad_id,
@@ -54,9 +57,12 @@ export default function AdPlacement({ position, postId, className = '' }: AdPlac
           .eq('post_id', postId)
           .eq('position', position as any)
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
+
+        console.log('📍 Placement query result:', { placementData, placementError });
 
         if (placementData?.ads) {
+          console.log('✅ Found specific ad placement:', placementData.ads);
           setAd(placementData.ads as Ad);
           setIsLoading(false);
           return;
@@ -64,15 +70,21 @@ export default function AdPlacement({ position, postId, className = '' }: AdPlac
       }
 
       // Fallback to global ads for this position
-      const { data, error } = await query.limit(1).single();
+      console.log('🌐 Checking for global ads for position:', position);
+      const { data, error } = await query.limit(1).maybeSingle();
+      
+      console.log('🌐 Global ad query result:', { data, error });
 
       if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
-        console.error('Error fetching ad:', error);
+        console.error('❌ Error fetching ad:', error);
       } else if (data) {
+        console.log('✅ Found global ad:', data);
         setAd(data);
+      } else {
+        console.log('❌ No ads found for position:', position);
       }
     } catch (error) {
-      console.error('Error fetching ad:', error);
+      console.error('❌ Error fetching ad:', error);
     } finally {
       setIsLoading(false);
     }
