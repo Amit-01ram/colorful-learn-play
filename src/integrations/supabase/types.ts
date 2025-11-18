@@ -493,18 +493,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      increment_post_views: {
-        Args: { post_slug: string }
-        Returns: undefined
-      }
-      is_admin_user: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
-      make_user_admin: {
-        Args: { user_email: string }
-        Returns: undefined
-      }
+      increment_post_views: { Args: { post_slug: string }; Returns: undefined }
+      is_admin_user: { Args: { user_uuid: string }; Returns: boolean }
+      make_user_admin: { Args: { user_email: string }; Returns: undefined }
     }
     Enums: {
       ad_position:
